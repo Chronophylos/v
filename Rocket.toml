@@ -1,0 +1,8 @@
+[global.databases]
+v = { url = "postgres://v:password@localhost/v" }
+
+[development]
+address = "localhost"
+
+[production]
+address = "0.0.0.0"

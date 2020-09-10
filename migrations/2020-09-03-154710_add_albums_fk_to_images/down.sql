@@ -1,0 +1,1 @@
+ALTER TABLE images DROP CONSTRAINT album_fk;

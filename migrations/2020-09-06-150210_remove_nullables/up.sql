@@ -1,0 +1,8 @@
+ALTER TABLE albums
+    ALTER COLUMN token SET NOT NULL,
+    ALTER COLUMN deletion_token SET NOT NULL;
+
+ALTER TABLE images
+    ALTER COLUMN token SET NOT NULL,
+    ALTER COLUMN deletion_token SET NOT NULL,
+    ALTER COLUMN url SET NOT NULL;

@@ -1,0 +1,20 @@
+{{#*inline "page"}}
+
+<h3>Create a new album</h3>
+
+<form action="/a" method="post" accept-charset="utf-8">
+    <label>Title (optional):
+        <input type="text" name="title" value="">
+    </label><br /><br />
+
+    <label>Images (comma separated):
+        <input type="textarea" name="images" value="">
+    </label><br /><br />
+
+    <label>Submit:
+        <input type="submit" value="Create">
+    </label>
+</form>
+
+{{/inline}}
+{{~> layout ~}}
