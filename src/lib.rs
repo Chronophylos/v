@@ -7,8 +7,6 @@ extern crate rocket;
 extern crate diesel;
 #[macro_use]
 extern crate rocket_contrib;
-#[macro_use]
-extern crate diesel_migrations;
 
 mod deletion_token;
 mod schema;
@@ -32,9 +30,6 @@ lazy_static! {
         Header::new("X-Server-Framework", "Rocket")
     ];
 }
-
-// provides embedded_migrations
-embed_migrations!();
 
 #[database("v")]
 pub struct VDbConn(diesel::PgConnection);
