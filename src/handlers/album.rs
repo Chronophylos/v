@@ -102,7 +102,7 @@ pub fn post(
     for url in form_result.images.split(',') {
         let url = validate_url(&domain_allow_list, url)?;
 
-        if valid_image(&url) {
+        if validate_image(&url) {
             let image = album
                 .add_image(&*conn, url.as_str())
                 .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?;
@@ -128,7 +128,7 @@ pub fn patch(_conn: VDbConn, token: &RawStr, _deletion_token: DeletionToken<'_>)
 }
 
 /// TODO: check content type
-fn valid_image(_url: &Url) -> bool {
+fn validate_image(_url: &Url) -> bool {
     true
 }
 
