@@ -1,30 +1,23 @@
-use crate::{deletion_token::DeletionToken, models::Album, VDbConn};
+use crate::{deletion_token::DeletionToken, models::Album, DomainAllowList, VDbConn};
+use anyhow::Result;
 use diesel::{OptionalExtension, RunQueryDsl};
 use log::trace;
 use rocket::{
     http::{RawStr, Status},
-    request::FormDataError,
-    request::FormError,
-    response::status::Created,
-    response::Redirect,
+    request::{Form, FormDataError, FormError},
+    response::{status::Created, status::Custom},
+    State,
 };
-use rocket::{request::Form, response::status::Custom};
 use rocket_contrib::templates::Template;
 use serde::Serialize;
 use std::collections::HashMap;
+use url::Url;
 
 #[get("/")]
 pub fn index() -> Template {
     trace!("handling GET /a/");
 
     Template::render("album/new", ())
-}
-
-#[get("/new")]
-pub fn new() -> Redirect {
-    trace!("handling GET /a/new");
-
-    Redirect::to("/a")
 }
 
 #[derive(Debug, Serialize)]
@@ -59,14 +52,14 @@ pub fn get(conn: VDbConn, token: &RawStr) -> Result<Template, Custom<String>> {
 }
 
 #[head("/<token>")]
-pub fn head(conn: VDbConn, token: &RawStr) -> Result<(), Custom<String>> {
+pub fn head(conn: VDbConn, token: &RawStr) -> Result<(), Custom<()>> {
     trace!("handling HEAD /a/{}", token);
 
     Album::by_token(&token)
         .first::<Album>(&*conn)
         .optional()
-        .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?
-        .ok_or(Custom(Status::NotFound, "Could not find album".into()))?;
+        .map_err(|_| Custom(Status::InternalServerError, ()))?
+        .ok_or(Custom(Status::NotFound, ()))?;
 
     Ok(())
 }
@@ -81,6 +74,7 @@ pub struct NewAlbumForm {
 pub fn post(
     conn: VDbConn,
     sink: Result<Form<NewAlbumForm>, FormError>,
+    domain_allow_list: State<DomainAllowList>,
 ) -> Result<Created<Template>, Custom<String>> {
     trace!("handling POST /a");
 
@@ -106,10 +100,14 @@ pub fn post(
     let mut images = Vec::new();
 
     for url in form_result.images.split(',') {
-        let image = album
-            .add_image(&*conn, url)
-            .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?;
-        images.push(image);
+        let url = validate_url(&domain_allow_list, url)?;
+
+        if valid_image(&url) {
+            let image = album
+                .add_image(&*conn, url.as_str())
+                .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?;
+            images.push(image);
+        }
     }
 
     // TODO: show album
@@ -124,9 +122,58 @@ pub fn post(
 
 #[patch("/<token>")]
 pub fn patch(_conn: VDbConn, token: &RawStr, _deletion_token: DeletionToken<'_>) -> Custom<()> {
-    //let repo = Repo::borrow_from(&state).clone();
-
     trace!("handling PATCH /a/{}", token);
 
     Custom(Status::NotImplemented, ())
+}
+
+/// TODO: check content type
+fn valid_image(_url: &Url) -> bool {
+    true
+}
+
+pub fn validate_url(
+    domain_allow_list: &State<DomainAllowList>,
+    url: &str,
+) -> Result<Url, Custom<String>> {
+    let mut url: Url = url
+        .parse()
+        .map_err(|err| Custom(Status::BadRequest, format!("Invalid form input: {}", err)))?;
+
+    match url.domain() {
+        Some(domain) => {
+            if !domain_allow_list.contains(&domain.to_lowercase()) {
+                return Err(Custom(
+                    Status::BadRequest,
+                    format!("Invalid form input: URL is not allowed: {}", url),
+                ));
+            }
+        }
+        None => {
+            return Err(Custom(
+                Status::BadRequest,
+                format!("Invalid form input: URL has no domain part: {}", url),
+            ));
+        }
+    }
+
+    if url.cannot_be_a_base() {
+        return Err(Custom(
+            Status::BadRequest,
+            format!("Invalid form input: Not a base URL: {}", url),
+        ));
+    }
+
+    match url.scheme() {
+        "http" => url.set_scheme("http").unwrap(),
+        "https" | "ftp" => {}
+        _ => {
+            return Err(Custom(
+                Status::BadRequest,
+                format!("Invalid form input: Invalid scheme: {}", url),
+            ))
+        }
+    }
+
+    Ok(url)
 }
