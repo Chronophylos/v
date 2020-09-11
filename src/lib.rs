@@ -21,6 +21,7 @@ use std::{collections::HashSet, ops::Deref};
 use crate::handlers::*;
 use lazy_static::lazy_static;
 use rocket::{catchers, fairing::AdHoc, http::Header, routes, Rocket};
+use rocket_contrib::helmet::SpaceHelmet;
 use rocket_contrib::{serve::StaticFiles, templates::Template};
 
 lazy_static! {
@@ -51,6 +52,20 @@ impl Deref for DomainAllowList {
 
 pub fn rocket() -> Rocket {
     rocket::ignite()
+        .register(catchers![not_found])
+        .mount("/assets", StaticFiles::from("assets"))
+        .mount("/", routes![index::get, index::head])
+        .mount(
+            "/a",
+            routes![
+                album::index,
+                album::get,
+                album::head,
+                album::post,
+                album::patch
+            ],
+        )
+        .attach(SpaceHelmet::default())
         .attach(VDbConn::fairing())
         .attach(AdHoc::on_response("Server Headers", |_req, resp| {
             for header in STATIC_HEADERS.clone() {
@@ -73,19 +88,6 @@ pub fn rocket() -> Rocket {
 
             Ok(rocket.manage(DomainAllowList(set)))
         }))
-        .register(catchers![not_found])
-        .mount("/assets", StaticFiles::from("assets"))
-        .mount("/", routes![index::get, index::head])
-        .mount(
-            "/a",
-            routes![
-                album::index,
-                album::get,
-                album::head,
-                album::post,
-                album::patch
-            ],
-        )
 }
 
 #[cfg(test)]
