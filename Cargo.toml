@@ -2,7 +2,13 @@
 name = "v"
 version = "0.1.0"
 authors = ["Nikolai Zimmermann <nikolai@chronophylos.com>"]
+description = "A image viewer and album manager"
+license = "MIT"
 edition = "2018"
+
+[[bin]]
+name = "v-server"
+path = "src/main.rs"
 
 [dependencies]
 diesel = { version = "1.4.5", features = ["postgres", "r2d2"] }
