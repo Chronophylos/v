@@ -30,4 +30,4 @@ jobs:
               uses: actions/upload-artifact@v1
               with:
                   name: v-assets
-                  path: v-assets.tar
+                  path: v-assets.tgz
