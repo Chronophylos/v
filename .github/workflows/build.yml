@@ -22,7 +22,7 @@ jobs:
                   path: target/release/v-server
     additional-files:
         runs-on: ubuntu-latest
-            steps:
+        steps:
             - name: Pack additional files
               run: tar -czvf v-assets.tgz assets templates
             - name: Archive additional files
