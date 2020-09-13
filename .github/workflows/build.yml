@@ -9,12 +9,20 @@ jobs:
     linux:
         runs-on: ubuntu-latest
         steps:
+            - name: Set linker to lld
+            run: |
+              mkdir .cargo
+              echo '[target.x86_64-unknown-linux-gnu]' >> .cargo/config
+              echo 'linker = "/usr/bin/clang"' >> .cargo/config
+              echo 'rustflags = ["-Clink-arg=-fuse-ld=lld"]' >> .cargo/config
             - uses: hecrj/setup-rust-action@v1
             - name: Install cargo-deb
               run: cargo install cargo-deb
             - uses: actions/checkout@master
-            - name: Build all binaries
-              run: cargo build --verbose --release --bins
+            - name: Build binary
+              run: cargo build --verbose --release
+            - name: Strip binary
+              run: strip -sv target/release/v-server
             - name: Archive binary
               uses: actions/upload-artifact@v1
               with:
