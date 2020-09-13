@@ -39,10 +39,7 @@ pub struct VDbConn(diesel::PgConnection);
 pub fn rocket() -> Rocket {
     rocket::ignite()
         .register(catchers![not_found])
-        .mount(
-            "/assets",
-            StaticFiles::from(concat!(env!("CARGO_MANIFEST_DIR"), "/assets")),
-        )
+        .mount("/assets", StaticFiles::from("/assets"))
         .mount(
             "/",
             routes![
@@ -73,13 +70,13 @@ pub fn rocket() -> Rocket {
         }))
         .attach(Template::fairing())
         .attach(AdHoc::on_attach("V Config", |rocket| {
-            Ok(rocket.manage(match Config::load("./config.toml") {
-                Ok(c) => c,
+            match Config::load("./config.toml") {
+                Ok(c) => Ok(rocket.manage(c)),
                 Err(err) => {
                     error!("Could not load config: {}", err);
-                    panic!(err)
+                    Err(rocket)
                 }
-            }))
+            }
         }))
 }
 
