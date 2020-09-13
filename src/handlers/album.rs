@@ -133,6 +133,7 @@ pub struct ImportAlbumForm {
 pub fn import(
     conn: VDbConn,
     sink: Result<Form<ImportAlbumForm>, FormError>,
+    config: State<Config>,
 ) -> Result<Created<Template>, Custom<String>> {
     let form_result = sink.map_err(|err| match err {
         FormDataError::Io(_) => Custom(
@@ -173,7 +174,7 @@ pub fn import(
         })?;
     let album_hash = path_segments.nth(1).unwrap();
 
-    let links = get_album_images("", album_hash).map_err(|err| {
+    let links = get_album_images(&config.imgur.client_id, album_hash).map_err(|err| {
         Custom(
             Status::BadRequest,
             format!("Could not get album images: {}", err),

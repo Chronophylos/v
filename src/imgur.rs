@@ -23,8 +23,6 @@ pub fn get_album_images(client_id: &str, album_hash: &str) -> Result<Vec<String>
         .header("Authorization", format!("Client-ID {}", client_id))
         .send()?;
 
-    dbg!(&resp);
-
     ensure!(
         resp.status().is_success(),
         format!("Imgur said: {}", resp.status())
