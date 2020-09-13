@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use log::trace;
-use rocket::{http::Status, response::status::Custom};
+use rocket::{http::Status, response::status::Custom, response::NamedFile};
 use rocket_contrib::templates::Template;
 
 #[get("/")]
@@ -30,4 +30,9 @@ pub fn import() -> Template {
 #[get("/FeelsDankMan")]
 pub fn feelsdankman() -> Custom<&'static str> {
     Custom(Status::ImATeapot, "FeelsDankMan")
+}
+
+#[get("/favicon.ico")]
+pub fn favicon() -> NamedFile {
+    NamedFile::open("assets/favicon.svg").unwrap()
 }

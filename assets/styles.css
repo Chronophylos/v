@@ -11,7 +11,7 @@ body {
 
 .container {
     display: grid;
-    grid-template-columns: 20% auto 20%;
+    grid-template-columns: 30% auto 30%;
     grid-template-rows: auto;
     grid-template-areas:
         '. header .'
@@ -59,6 +59,14 @@ a:link {
 a:hover,
 a:active {
     color: #c0c0c0;
+}
+
+.token {
+    color: rgb(201, 29, 29);
+}
+
+.token:hover {
+    color: rgb(201, 40, 40);
 }
 
 input {
