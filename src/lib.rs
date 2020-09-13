@@ -39,7 +39,7 @@ pub struct VDbConn(diesel::PgConnection);
 pub fn rocket() -> Rocket {
     rocket::ignite()
         .register(catchers![not_found])
-        .mount("/assets", StaticFiles::from("/assets"))
+        .mount("/assets", StaticFiles::from("assets"))
         .mount(
             "/",
             routes![
