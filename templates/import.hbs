@@ -1,0 +1,20 @@
+{{#*inline "page"}}
+
+<h3>Import a exising album</h3>
+
+<form action="/a/import" method="POST" accept-charset="utf-8">
+    <label>Title (optional):
+        <input type="text" name="title" value="">
+    </label><br /><br />
+
+    <label>Link:
+        <input type="text" name="link" value="">
+    </label><br /><br />
+
+    <label>Submit:
+        <input type="submit" value="Create">
+    </label>
+</form>
+
+{{/inline}}
+{{~> layout ~}}

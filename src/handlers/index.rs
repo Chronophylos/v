@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use log::trace;
-use rocket::response::Redirect;
+use rocket::{http::Status, response::status::Custom};
 use rocket_contrib::templates::Template;
 
 #[get("/")]
@@ -17,7 +17,17 @@ pub fn head() {
     trace!("handling HEAD /");
 }
 
-#[get("/favicon.ico")]
-pub fn favicon() -> Redirect {
-    Redirect::to("/assets/favicon.svg")
+#[get("/new")]
+pub fn new() -> Template {
+    Template::render("new", ())
+}
+
+#[get("/import")]
+pub fn import() -> Template {
+    Template::render("import", ())
+}
+
+#[get("/FeelsDankMan")]
+pub fn feelsdankman() -> Custom<&'static str> {
+    Custom(Status::ImATeapot, "FeelsDankMan")
 }

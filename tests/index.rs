@@ -27,6 +27,23 @@ fn head() {
 }
 
 #[test]
+fn feelsdankman() {
+    let client = Client::new(v::rocket()).expect("valid rocket instance");
+
+    let mut response = client.get("/FeelsDankMan").dispatch();
+
+    assert_eq!(response.status(), Status::ImATeapot);
+    assert_eq!(response.content_type(), Some(ContentType::Plain));
+    assert_eq!(response.body_string(), Some("FeelsDankMan".to_string()));
+
+    let mut response = client.head("/FeelsDankMan").dispatch();
+
+    assert_eq!(response.status(), Status::ImATeapot);
+    assert_eq!(response.content_type(), Some(ContentType::Plain));
+    assert_eq!(response.body_string(), Some(String::new()));
+}
+
+#[test]
 fn unsupported_methods() {
     let client = Client::new(v::rocket()).expect("valid rocket instance");
 

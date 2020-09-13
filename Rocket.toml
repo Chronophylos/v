@@ -1,5 +1,2 @@
 [global.databases]
 v = { url = "postgres://v:password@localhost/v" }
-
-[global]
-domain_allow_list = ["i.imgur.com", "i.redd.it", "i.nuuls.com", "pbs.twimg.com"]

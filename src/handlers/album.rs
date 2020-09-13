@@ -1,4 +1,6 @@
-use crate::{deletion_token::DeletionToken, models::Album, DomainAllowList, VDbConn};
+use crate::{
+    config::Config, deletion_token::DeletionToken, imgur::get_album_images, models::Album, VDbConn,
+};
 use anyhow::Result;
 use diesel::{OptionalExtension, RunQueryDsl};
 use log::trace;
@@ -10,15 +12,8 @@ use rocket::{
 };
 use rocket_contrib::templates::Template;
 use serde::Serialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use url::Url;
-
-#[get("/")]
-pub fn index() -> Template {
-    trace!("handling GET /a/");
-
-    Template::render("album/new", ())
-}
 
 #[derive(Debug, Serialize)]
 pub struct AlbumContext {
@@ -53,8 +48,6 @@ pub fn get(conn: VDbConn, token: &RawStr) -> Result<Template, Custom<String>> {
 
 #[head("/<token>")]
 pub fn head(conn: VDbConn, token: &RawStr) -> Result<(), Custom<()>> {
-    trace!("handling HEAD /a/{}", token);
-
     Album::by_token(&token)
         .first::<Album>(&*conn)
         .optional()
@@ -64,20 +57,23 @@ pub fn head(conn: VDbConn, token: &RawStr) -> Result<(), Custom<()>> {
     Ok(())
 }
 
+#[post("/<_token>/edit")]
+pub fn edit(_conn: VDbConn, _token: &RawStr) -> Result<Template, Custom<String>> {
+    todo!()
+}
+
 #[derive(Debug, FromForm)]
 pub struct NewAlbumForm {
     title: String,
     images: String,
 }
 
-#[post("/", data = "<sink>")]
-pub fn post(
+#[post("/new", data = "<sink>")]
+pub fn new(
     conn: VDbConn,
     sink: Result<Form<NewAlbumForm>, FormError>,
-    domain_allow_list: State<DomainAllowList>,
+    config: State<Config>,
 ) -> Result<Created<Template>, Custom<String>> {
-    trace!("handling POST /a");
-
     let form_result = sink.map_err(|err| match err {
         FormDataError::Io(_) => Custom(
             Status::BadRequest,
@@ -100,7 +96,7 @@ pub fn post(
     let mut images = Vec::new();
 
     for url in form_result.images.split(',') {
-        let url = validate_url(&domain_allow_list, url)?;
+        let url = validate_url(&config.allowed_domains, url)?;
 
         if validate_image(&url) {
             let image = album
@@ -127,22 +123,104 @@ pub fn patch(_conn: VDbConn, token: &RawStr, _deletion_token: DeletionToken<'_>)
     Custom(Status::NotImplemented, ())
 }
 
+#[derive(Debug, FromForm)]
+pub struct ImportAlbumForm {
+    title: String,
+    link: String,
+}
+
+#[post("/import", data = "<sink>")]
+pub fn import(
+    conn: VDbConn,
+    sink: Result<Form<ImportAlbumForm>, FormError>,
+) -> Result<Created<Template>, Custom<String>> {
+    let form_result = sink.map_err(|err| match err {
+        FormDataError::Io(_) => Custom(
+            Status::BadRequest,
+            "Form input was invalid UTF-8.".to_string(),
+        ),
+        FormDataError::Malformed(f) | FormDataError::Parse(_, f) => {
+            Custom(Status::BadRequest, format!("Invalid form input: {}", f))
+        }
+    })?;
+
+    let title = if form_result.title.is_empty() {
+        None
+    } else {
+        Some(form_result.title.as_str())
+    };
+
+    let url: Url = form_result
+        .link
+        .parse()
+        .map_err(|err| Custom(Status::BadRequest, format!("Invalid form input: {}", err)))?;
+
+    if url.domain() != Some("imgur.com") {
+        return Err(Custom(
+            Status::BadRequest,
+            format!("Invalid form input: URL is not allowed: {}", url),
+        ));
+    }
+
+    let mut path_segments = url
+        .path_segments()
+        .ok_or_else(|| "cannot be base")
+        .map_err(|err| {
+            Custom(
+                Status::BadRequest,
+                format!("Could not parse album link: {}", err),
+            )
+        })?;
+    let album_hash = path_segments.nth(1).unwrap();
+
+    let links = get_album_images("", album_hash).map_err(|err| {
+        Custom(
+            Status::BadRequest,
+            format!("Could not get album images: {}", err),
+        )
+    })?;
+
+    let album = Album::new(&*conn, title)
+        .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?;
+
+    let mut images = Vec::new();
+
+    for link in links {
+        let url: Url = link
+            .parse()
+            .map_err(|err| Custom(Status::BadRequest, format!("Invalid form input: {}", err)))?;
+
+        if validate_image(&url) {
+            let image = album
+                .add_image(&*conn, url.as_str())
+                .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?;
+            images.push(image);
+        }
+    }
+
+    // TODO: show album
+    let mut context = HashMap::new();
+    context.insert("deletion_token", album.deletion_token);
+    context.insert("token", album.token.clone());
+    Ok(Created(
+        format!("/a/{}", album.token),
+        Some(Template::render("album/created", &context)),
+    ))
+}
+
 /// TODO: check content type
 fn validate_image(_url: &Url) -> bool {
     true
 }
 
-pub fn validate_url(
-    domain_allow_list: &State<DomainAllowList>,
-    url: &str,
-) -> Result<Url, Custom<String>> {
+pub fn validate_url(allowed_domains: &HashSet<String>, url: &str) -> Result<Url, Custom<String>> {
     let mut url: Url = url
         .parse()
         .map_err(|err| Custom(Status::BadRequest, format!("Invalid form input: {}", err)))?;
 
     match url.domain() {
         Some(domain) => {
-            if !domain_allow_list.contains(&domain.to_lowercase()) {
+            if !allowed_domains.contains(&domain.to_lowercase()) {
                 return Err(Custom(
                     Status::BadRequest,
                     format!("Invalid form input: URL is not allowed: {}", url),
