@@ -1,36 +1,45 @@
-use std::borrow::Cow;
+use std::ops::Deref;
 
-use rocket::{http::Status, request::FromRequest};
+use rocket::{
+    http::Status,
+    request::{FromRequest, Outcome},
+    Request,
+};
 
 /// Returns true if `key` is a valid API key string.
 fn is_valid(key: &str) -> bool {
-    key.len() == 16
+    key.len() == 16 && key.is_ascii()
 }
 
 #[derive(Debug, Clone)]
-pub struct DeletionToken<'a>(Cow<'a, str>);
+pub struct DeletionToken(String);
+
+impl Deref for DeletionToken {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum DeletionTokenError {
     Missing,
     Invalid,
-    BadCount,
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for DeletionToken<'a> {
+impl FromRequest<'_, '_> for DeletionToken {
     type Error = DeletionTokenError;
 
-    fn from_request(
-        request: &'a rocket::Request<'r>,
-    ) -> rocket::request::Outcome<Self, Self::Error> {
+    fn from_request(request: &'_ Request<'_>) -> Outcome<Self, Self::Error> {
         use rocket::Outcome::*;
-
-        let keys: Vec<_> = request.headers().get("x-api-key").collect();
-        match keys.len() {
-            0 => Failure((Status::BadRequest, DeletionTokenError::Missing)),
-            1 if is_valid(keys[0]) => Success(DeletionToken(Cow::Borrowed(keys[0]))),
-            1 => Failure((Status::BadRequest, DeletionTokenError::Invalid)),
-            _ => Failure((Status::BadRequest, DeletionTokenError::BadCount)),
+        let value: Option<String> = request
+            .get_query_value("deletion_token")
+            .and_then(|r| r.ok());
+        match value {
+            Some(token) if is_valid(&token) => Success(DeletionToken(token)),
+            Some(_) => Failure((Status::BadRequest, DeletionTokenError::Invalid)),
+            None => Failure((Status::BadRequest, DeletionTokenError::Missing)),
         }
     }
 }

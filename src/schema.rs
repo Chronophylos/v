@@ -14,6 +14,7 @@ table! {
         token -> Varchar,
         deletion_token -> Varchar,
         url -> Varchar,
+        index -> Int4,
     }
 }
 

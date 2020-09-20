@@ -1,7 +1,8 @@
 use super::schema::{albums, images};
 use anyhow::{Context, Result};
 use diesel::{
-    insert_into, pg::Pg, BelongingToDsl, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl,
+    insert_into, pg::Pg, update, BelongingToDsl, ExpressionMethods, PgConnection, QueryDsl,
+    RunQueryDsl,
 };
 use rand::seq::SliceRandom;
 
@@ -60,8 +61,8 @@ impl Album {
             .into_boxed()
     }
 
-    pub fn add_image(&self, conn: &PgConnection, url: &str) -> Result<Image> {
-        Image::new(conn, self.id, url)
+    pub fn add_image(&self, conn: &PgConnection, url: &str, index: i32) -> Result<Image> {
+        Image::new(conn, self.id, url, index)
     }
 
     pub fn select_images<'a>(&'a self) -> images::BoxedQuery<'a, Pg> {
@@ -73,6 +74,17 @@ impl Album {
             .select(images::url)
             .get_results(conn)
             .context("Could not get images belonging to album")
+    }
+
+    pub fn increase_index(&self, conn: &PgConnection, start: i32) -> Result<()> {
+        update(Image::belonging_to(self).filter(images::index.ge(start)))
+            .set(images::index.eq(images::index + 1))
+            .execute(conn)?;
+        Ok(())
+    }
+
+    pub fn image_count(&self, conn: &PgConnection) -> Result<usize> {
+        Ok(self.select_images().count().get_result::<i64>(conn)? as usize)
     }
 }
 
@@ -95,10 +107,11 @@ pub struct Image {
     pub deletion_token: String,
 
     pub url: String,
+    pub index: i32,
 }
 
 impl Image {
-    pub fn new(conn: &PgConnection, album_id: i32, url: &str) -> Result<Image> {
+    pub fn new(conn: &PgConnection, album_id: i32, url: &str, index: i32) -> Result<Image> {
         let (token, deletion_token) = generate_token_pair();
 
         insert_into(images::table)
@@ -106,6 +119,7 @@ impl Image {
                 album_id,
                 token: token.as_str(),
                 deletion_token: deletion_token.as_str(),
+                index,
                 url,
             })
             .get_result(conn)
@@ -132,4 +146,5 @@ pub struct NewImage<'a> {
     pub deletion_token: &'a str,
 
     pub url: &'a str,
+    pub index: i32,
 }

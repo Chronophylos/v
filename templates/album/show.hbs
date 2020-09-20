@@ -1,5 +1,8 @@
-{{#*inline "page"}}
+{{#*inline "header"}}
+<a href="/a/{{token}}/auth">Edit</a>
+{{/inline}}
 
+{{#*inline "page"}}
 <div class="image-list">
     {{#each images}}
     <div class="image-container">
@@ -7,6 +10,5 @@
     </div>
     {{/each}}
 </div>
-
 {{/inline}}
 {{~> layout ~}}

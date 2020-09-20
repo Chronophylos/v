@@ -1,0 +1,13 @@
+{{#*inline "header"}}
+<a href="/a/{{token}}">Back</a>
+{{/inline}}
+
+{{#*inline "page"}}
+<h3>Authenticate using the deletion token for this album</h3>
+<form class="inline-form" action="/a/{{token}}/auth" method="POST" accept-charset="utf-8">
+    <input class="grow" type="text" name="deletion_token" value="{{deletion_token}}" placeholder="deletion token">
+    <input type="submit" value="Auth">
+</form>
+{{/inline}}
+
+{{~> layout ~}}

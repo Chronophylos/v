@@ -7,6 +7,8 @@ body {
     background: url(/assets/images/imagedoc-darknoise.png) #333;
     background-attachment: fixed;
     color: #c7c7c7;
+    margin: 0;
+    padding: 0 8px;
 }
 
 .container {
@@ -14,9 +16,21 @@ body {
     grid-template-columns: 30% auto 30%;
     grid-template-rows: auto;
     grid-template-areas:
-        '. header .'
+        'header header header'
         '. content .'
         'footer footer footer';
+}
+
+.header {
+    font: small monospace;
+
+    display: grid;
+    grid-area: header;
+    align-self: start;
+
+    margin-top: 8px;
+    margin-right: 12px;
+    margin-left: auto;
 }
 
 .content {
@@ -24,6 +38,7 @@ body {
 }
 
 .image-list {
+    margin-top: 8px;
     justify-self: center;
 }
 
@@ -79,10 +94,6 @@ a:active {
     color: rgb(201, 40, 40);
 }
 
-input {
-    vertical-align: baseline;
-}
-
 input[type='submit'] {
     display: inline-block;
     padding: 0.2em 1.45em;
@@ -117,7 +128,7 @@ input[type='textarea'] {
 }
 
 input[type='text'],
-input[type='textarea'] {
+input[type='url'] {
     display: inline-block;
     margin: 0.1em;
     border: 0.15em solid #c7c7c7;
@@ -131,6 +142,31 @@ input[type='textarea'] {
 }
 
 input[type='text']:focus,
-input[type='textarea']:focus {
+input[type='url']:focus {
     border-color: #7a7a7a;
+}
+
+label {
+    display: flex;
+    flex-direction: row;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.url-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.inline-form {
+    flex-direction: row;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.grow {
+    flex-grow: 1;
 }

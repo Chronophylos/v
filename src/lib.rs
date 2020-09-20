@@ -1,5 +1,5 @@
 #![warn(missing_copy_implementations)]
-#![feature(proc_macro_hygiene, decl_macro)]
+#![feature(proc_macro_hygiene, decl_macro, bool_to_option)]
 
 #[macro_use]
 extern crate rocket;
@@ -58,7 +58,10 @@ pub fn rocket() -> Rocket {
                 album::head,
                 album::new,
                 album::import,
-                album::patch
+                album::get_auth,
+                album::post_auth,
+                album::get_edit,
+                album::post_edit,
             ],
         )
         .attach(SpaceHelmet::default())
