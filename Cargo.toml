@@ -29,6 +29,7 @@ smol = "1.0.0"
 reqwest = { version = "0.10.8", features = ["json", "blocking"] }
 serde_json = "1.0.57"
 toml = "0.5.6"
+self_update = { version = "0.20.0", default-features = false, features = ["rustls"] }
 
 
 [dependencies.rocket_contrib]

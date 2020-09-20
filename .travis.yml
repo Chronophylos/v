@@ -1,0 +1,76 @@
+# Based on the "trust" template v0.1.2
+# https://github.com/japaric/trust/tree/v0.1.2
+
+dist: trusty
+language: rust
+services: docker
+sudo: required
+rust: nightly
+
+env:
+  global:
+    # TODO Update this to match the name of your project.
+    - CRATE_NAME=v
+
+matrix:
+  # TODO These are all the build jobs. Adjust as necessary. Comment out what you
+  # don't need
+  include:
+    # Linux
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=x86_64-unknown-linux-musl
+
+    # OSX
+    - env: TARGET=i686-apple-darwin
+      os: osx
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+    # *BSD
+    - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+
+    # Windows
+    - env: TARGET=x86_64-pc-windows-gnu
+
+before_install:
+  - set -e
+  - rustup self update
+
+install:
+  - sh ci/install.sh
+  - source ~/.cargo/env || true
+
+script:
+  - bash ci/script.sh
+
+after_script: set +e
+
+before_deploy:
+  - sh ci/before_deploy.sh
+
+deploy:
+  api_key:
+    secure: "aEKur+gJIHFMLS4TX9Bm426MTlOuulO55g0BIIe2SPWlgyc5P7BXtCMd9uYYZQlopqcR/81NkSUBHnDC5Lltf9s+gs9Ros+9pbTzB/f0Afm5oo8PDHJmFm7cg6n+/HclR3LIK5o2V1F/aFOLYea/OA6W+HRwIo9YNzcl5YuI53EZhPIMFpEnW/yekqxfYC4n1GHqX1DYw+xwC+s2pYupg3C6Ln/LSfx98HpMV5EULLtoDRVVWin4n7a85eKCw0sLMn53s4YflusmO3NSSxwARXdAsXTrgBKo0m4nMJByinDOhWPNuEpklsUMhKJJltLsi6mDsY/kFO+OXCbgKRjDp82AKJ+7V5qwo5IfgEV5iuj0ssRxF4Pjg9nmQb5INlgIAfUB3ff9aK0yNO1qXSb+i7O4nLLINuzti1hCn+w255pKkSj5ng2IbSr99m1j4rceoBGXUvbwz5pKxnKZVzn4rr/Jt88RnoIcPDxJ39iCZvWIspC4L4qYp2GYdMI8JZkV/wxheGcPw811mMbRemvjDTzcUyMvb5nrSaqiZF4lrVon50XVaDsVXMkBKQ5osJpPoyOIVwf+Bc5Z+kLUDAX+zZYHEj3QkWAXshOXSwGeSrMXVXV//HhsaZYXHhSut+V5uK9ANRfKu57Wizpkhy62V61n+UmWaoP935fEqMTB9D0="
+  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  on:
+    tags: true
+  provider: releases
+  skip_cleanup: true
+
+cache: cargo
+before_cache:
+  # Travis can't cache files that are not readable by "others"
+  - chmod -R a+r $HOME/.cargo
+
+branches:
+  only:
+    # release tags
+    - /^v\d+\.\d+\.\d+.*$/
+    - master
+
+notifications:
+  email:
+    on_success: never

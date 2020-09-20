@@ -19,10 +19,10 @@ pub mod models;
 use crate::handlers::*;
 use config::Config;
 use lazy_static::lazy_static;
-use log::error;
+use log::{error, info};
 use rocket::{catchers, fairing::AdHoc, http::Header, routes, Rocket};
-use rocket_contrib::helmet::SpaceHelmet;
-use rocket_contrib::{serve::StaticFiles, templates::Template};
+use rocket_contrib::{helmet::SpaceHelmet, serve::StaticFiles, templates::Template};
+use self_update::cargo_crate_version;
 
 lazy_static! {
     static ref STATIC_HEADERS: Vec<Header<'static>> = vec![
@@ -82,6 +82,23 @@ pub fn rocket() -> Rocket {
                 }
             }
         }))
+}
+
+pub fn update() -> anyhow::Result<()> {
+    info!("Checking for an update");
+
+    let status = self_update::backends::github::Update::configure()
+        .repo_owner("chronophylos")
+        .repo_name("v")
+        .bin_name("v-server")
+        .show_download_progress(true)
+        .current_version(cargo_crate_version!())
+        .build()?
+        .update()?;
+
+    info!("Update status: `{}`!", status.version());
+
+    Ok(())
 }
 
 #[cfg(test)]
