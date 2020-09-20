@@ -11,8 +11,9 @@ main() {
         return
     fi
 
-    cargo test --target $TARGET
-    cargo test --target $TARGET --release
+    # disable tests until a database is set up beforehand
+    #cargo test --target $TARGET
+    #cargo test --target $TARGET --release
 }
 
 # we don't run the "test phase" when doing deploys
