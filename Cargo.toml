@@ -1,6 +1,6 @@
 [package]
 name = "v"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Nikolai Zimmermann <nikolai@chronophylos.com>"]
 description = "A image viewer and album manager"
 license = "MIT"
@@ -29,7 +29,7 @@ smol = "1.0.0"
 reqwest = { version = "0.10.8", features = ["json", "blocking"] }
 serde_json = "1.0.57"
 toml = "0.5.6"
-self_update = { version = "0.20.0", default-features = false, features = ["rustls"] }
+self_update = { version = "0.20.0", default-features = false, features = ["rustls", "archive-tar", "compression-flate2"] }
 
 
 [dependencies.rocket_contrib]
