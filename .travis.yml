@@ -48,7 +48,7 @@ deploy:
     tags: true
     repo: Chronophylos/v
   provider: releases
-  cleanup: true
+  skip_cleanup: true
 
 cache: cargo
 before_cache:
