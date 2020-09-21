@@ -63,6 +63,7 @@ footer {
 
     grid-area: footer;
     align-self: end;
+    margin-bottom: 0.5em;
 }
 
 .footer-rule {
