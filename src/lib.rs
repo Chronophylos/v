@@ -96,7 +96,9 @@ pub fn update() -> anyhow::Result<()> {
         .build()?
         .update()?;
 
-    info!("Update status: `{}`!", status.version());
+    if status.updated() {
+        info!("Updated to {}", status.version())
+    }
 
     Ok(())
 }
