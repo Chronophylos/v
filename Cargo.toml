@@ -26,7 +26,7 @@ url = "2.1.1"
 diesel_migrations = "1.4.0"
 lazy_static = "1.4.0"
 smol = "1.0.0"
-reqwest = { version = "0.10.8", features = ["json", "blocking"] }
+reqwest = { version = "0.10.8", features = ["json", "blocking", "rustls-tls"] }
 serde_json = "1.0.57"
 toml = "0.5.6"
 self_update = { version = "0.20.0", default-features = false, features = ["rustls", "archive-tar", "compression-flate2"] }
