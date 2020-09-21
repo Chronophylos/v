@@ -63,7 +63,6 @@ footer {
 
     grid-area: footer;
     align-self: end;
-    margin-bottom: 10px;
 }
 
 .footer-rule {
@@ -74,6 +73,20 @@ footer {
     border-width: 0;
     background-color: rgb(59, 59, 59);
     width: 95%;
+}
+
+.footer-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.separator {
+    border-left: 1px solid rgb(59, 59, 59);
+    height: 1.5em;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-top: 0.5em;
 }
 
 a:visited,
