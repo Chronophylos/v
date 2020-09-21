@@ -24,13 +24,15 @@ body {
 .header {
     font: small monospace;
 
+    position: fixed;
+
     display: grid;
     grid-area: header;
     align-self: start;
+    justify-self: end;
 
-    margin-top: 8px;
-    margin-right: 12px;
-    margin-left: auto;
+    margin-top: 1em;
+    margin-right: 2em;
 }
 
 .content {
