@@ -369,7 +369,7 @@ fn get_image_urls(conn: &PgConnection, album: &Album) -> Result<Vec<String>, Cus
 }
 
 fn check_deletion_token(album: &Album, deletion_token: &str) -> Result<(), Custom<String>> {
-    (album.deletion_token != deletion_token.trim())
+    (&album.deletion_token == deletion_token.trim())
         .then_some(())
         .ok_or(Custom(
             Status::Forbidden,
@@ -416,4 +416,57 @@ fn insert_image(
         .map_err(|err| Custom(Status::InternalServerError, err.to_string()))?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_deletion_token() {
+        assert!(
+            check_deletion_token(
+                &Album {
+                    id: 123,
+                    token: String::from("sladjhf"),
+                    deletion_token: String::from("2hasdl3akls"),
+                    title: None,
+                },
+                "2hasdl3akls"
+            )
+            .is_ok(),
+            "deletion tokens should match"
+        );
+
+        assert!(
+            check_deletion_token(
+                &Album {
+                    id: 123,
+                    token: String::from("sladjhf"),
+                    deletion_token: String::from("2hasdl3akls"),
+                    title: None,
+                },
+                "k23hfsoduzf2"
+            )
+            .is_err(),
+            "deletion tokens should not match"
+        );
+    }
+
+    #[test]
+    fn test_check_deletion_token_trim() {
+        assert!(
+            check_deletion_token(
+                &Album {
+                    id: 123,
+                    token: String::from("sladjhf"),
+                    deletion_token: String::from("2hasdl3akls"),
+                    title: None,
+                },
+                "  2hasdl3akls  "
+            )
+            .is_ok(),
+            "deletion tokens should match"
+        );
+    }
 }
