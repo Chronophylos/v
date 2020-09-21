@@ -71,7 +71,15 @@ impl Album {
 
     pub fn get_image_urls(&self, conn: &PgConnection) -> Result<Vec<String>> {
         self.select_images()
+            .order_by(images::index)
             .select(images::url)
+            .get_results(conn)
+            .context("Could not get images belonging to album")
+    }
+
+    pub fn get_images(&self, conn: &PgConnection) -> Result<Vec<Image>> {
+        self.select_images()
+            .order_by(images::index)
             .get_results(conn)
             .context("Could not get images belonging to album")
     }

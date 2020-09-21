@@ -1,4 +1,4 @@
-use crate::{config::Config, imgur::get_album_images, models::Album, VDbConn};
+use crate::{config::Config, imgur::get_album_images, models::Album, models::Image, VDbConn};
 use anyhow::Result;
 use diesel::{OptionalExtension, PgConnection, RunQueryDsl};
 use rocket::{
@@ -21,14 +21,6 @@ pub struct AlbumContext<'a> {
     pub images: &'a Vec<String>,
 }
 
-#[derive(Debug, Serialize)]
-pub struct AlbumSecretContext<'a> {
-    pub title: &'a Option<String>,
-    pub token: &'a str,
-    pub deletion_token: &'a str,
-    pub images: &'a Vec<String>,
-}
-
 #[get("/<token>")]
 pub fn get(conn: VDbConn, token: &RawStr) -> Result<Template, Custom<String>> {
     let album = get_album(&conn, token)?;
@@ -36,17 +28,9 @@ pub fn get(conn: VDbConn, token: &RawStr) -> Result<Template, Custom<String>> {
 
     Ok(Template::render(
         "album/show",
-        /*
         AlbumContext {
             title: &album.title,
             token: &album.token,
-            images: &images,
-        },
-        */
-        AlbumSecretContext {
-            title: &album.title,
-            token: &album.token,
-            deletion_token: &album.deletion_token,
             images: &images,
         },
     ))
@@ -112,6 +96,29 @@ pub struct EditAlbumForm {
     method: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct AlbumEditContext<'a> {
+    pub title: &'a Option<String>,
+    pub token: &'a str,
+    pub deletion_token: &'a str,
+    pub images: &'a Vec<ImageContext<'a>>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ImageContext<'a> {
+    pub token: &'a str,
+    pub url: &'a str,
+}
+
+impl<'a> From<&'a Image> for ImageContext<'a> {
+    fn from(image: &'a Image) -> Self {
+        ImageContext {
+            token: &image.token,
+            url: &image.url,
+        }
+    }
+}
+
 #[get("/<token>/edit")]
 pub fn get_edit(
     conn: VDbConn,
@@ -122,11 +129,12 @@ pub fn get_edit(
 
     check_deletion_token_cookie(&album, &mut cookies)?;
 
-    let images = get_image_urls(&conn, &album)?;
+    let images = get_images(&conn, &album)?;
+    let images = images.iter().map(|image| image.into()).collect();
 
     Ok(Template::render(
         "album/edit",
-        AlbumSecretContext {
+        AlbumEditContext {
             title: &album.title,
             token: &album.token,
             deletion_token: &album.deletion_token,
@@ -156,11 +164,12 @@ pub fn post_edit(
         }
     };
 
-    let images = get_image_urls(&conn, &album)?;
+    let images = get_images(&conn, &album)?;
+    let images = images.iter().map(|image| image.into()).collect();
 
     Ok(Template::render(
         "album/edit",
-        AlbumSecretContext {
+        AlbumEditContext {
             title: &album.title,
             token: &album.token,
             deletion_token: &album.deletion_token,
@@ -365,6 +374,12 @@ fn get_album(conn: &PgConnection, token: &str) -> Result<Album, Custom<String>> 
 fn get_image_urls(conn: &PgConnection, album: &Album) -> Result<Vec<String>, Custom<String>> {
     album
         .get_image_urls(conn)
+        .map_err(|err| Custom(Status::InternalServerError, err.to_string()))
+}
+
+fn get_images(conn: &PgConnection, album: &Album) -> Result<Vec<Image>, Custom<String>> {
+    album
+        .get_images(conn)
         .map_err(|err| Custom(Status::InternalServerError, err.to_string()))
 }
 
