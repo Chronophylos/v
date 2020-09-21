@@ -14,6 +14,9 @@ main() {
     # disable tests until a database is set up beforehand
     #cargo test --target $TARGET
     #cargo test --target $TARGET --release
+
+    ldd target/$TARGET/debug/v-server
+    ldd target/$TARGET/release/v-server
 }
 
 # we don't run the "test phase" when doing deploys
