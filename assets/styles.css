@@ -4,7 +4,7 @@ body {
 }
 
 body {
-    background: url(/assets/images/imagedoc-darknoise.png) #333;
+    background: url(/assets/background.png) #333;
     background-attachment: fixed;
     color: #c7c7c7;
     margin: 0;
