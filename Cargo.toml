@@ -29,7 +29,11 @@ smol = "1.1.0"
 reqwest = { version = "0.10.8", features = ["json", "blocking", "rustls-tls"] }
 serde_json = "1.0.57"
 toml = "0.5.6"
-self_update = { version = "0.20.0", default-features = false, features = ["rustls", "archive-tar", "compression-flate2"] }
+
+[dependencies.self_update]
+version = "0.20.0"
+default-features = false
+features = ["rustls", "archive-tar", "compression-flate2"]
 
 
 [dependencies.rocket_contrib]
