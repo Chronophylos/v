@@ -47,9 +47,9 @@ pub fn rocket() -> Rocket {
                 index::new,
                 index::import,
                 index::feelsdankman,
-                index::favicon,
-                index::styles,
-                index::background,
+                static_files::favicon,
+                static_files::styles,
+                static_files::background,
             ],
         )
         .mount(

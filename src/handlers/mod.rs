@@ -5,6 +5,7 @@ use rocket_contrib::templates::Template;
 
 pub mod album;
 pub mod index;
+pub mod static_files;
 
 #[catch(404)]
 pub fn not_found(req: &Request) -> Template {
