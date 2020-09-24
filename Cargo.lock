@@ -168,9 +168,9 @@ dependencies = [
 
 [[package]]
 name = "async-net"
-version = "1.4.1"
+version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ecf837512d9a4563d52aa90621f729bbf39a5ec4eac25ad868ed478822c526"
+checksum = "fb04482b77baa38d59d56aee0a7b4266600ab28e2b8be7af03508f6a30ecbdcf"
 dependencies = [
  "async-io",
  "blocking",
@@ -2111,9 +2111,9 @@ checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 
 [[package]]
 name = "smol"
-version = "1.1.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a57a5a01356bb64b9011293aaa7bdfe332aa1f3699098d71a3c5a51a5b688215"
+checksum = "d41237ba3e3ada55ff3515d37becc8fa90e5e4af2b13a011ec3f932d9f1b2405"
 dependencies = [
  "async-channel",
  "async-executor",
