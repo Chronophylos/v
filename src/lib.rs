@@ -21,7 +21,7 @@ use config::Config;
 use lazy_static::lazy_static;
 use log::{error, info};
 use rocket::{catchers, fairing::AdHoc, http::Header, routes, Rocket};
-use rocket_contrib::{helmet::SpaceHelmet, serve::StaticFiles, templates::Template};
+use rocket_contrib::{helmet::SpaceHelmet, templates::Template};
 use self_update::cargo_crate_version;
 
 lazy_static! {
@@ -39,7 +39,6 @@ pub struct VDbConn(diesel::PgConnection);
 pub fn rocket() -> Rocket {
     rocket::ignite()
         .register(catchers![not_found])
-        .mount("/assets", StaticFiles::from("assets"))
         .mount(
             "/",
             routes![
@@ -49,6 +48,8 @@ pub fn rocket() -> Rocket {
                 index::import,
                 index::feelsdankman,
                 index::favicon,
+                index::styles,
+                index::background,
             ],
         )
         .mount(

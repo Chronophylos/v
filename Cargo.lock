@@ -1779,6 +1779,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "resource"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11a7f6703c396037a02da99195e49138c37f3cc5146cb95f2f7d26debc0c5622"
+
+[[package]]
 name = "ring"
 version = "0.16.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2492,6 +2498,7 @@ dependencies = [
  "log 0.4.11",
  "rand",
  "reqwest",
+ "resource",
  "rocket",
  "rocket_contrib",
  "self_update",
