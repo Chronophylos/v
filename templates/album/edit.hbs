@@ -4,17 +4,7 @@
 
 {{#*inline "page"}}
 <div class="image-list">
-    <form class="inline-form" action="/a/{{token}}/edit" method="post" accept-charset="utf-8">
-        <input class="grow" type="url" name="url" value="">
-        <input type="hidden" name="index" value="-1">
-        <input type="hidden" name="deletion_token" value="{{deletion_token}}">
-        <input type="hidden" name="method" value="insert">
-        <input type="submit" value="Add">
-    </form>
     {{#each images}}
-    <div class="image-container">
-        <img src="{{this}}" />
-    </div>
     <form class="inline-form" action="/a/{{../token}}/edit" method="post" accept-charset="utf-8">
         <input class="grow" type="url" name="url" value="">
         <input type="hidden" name="index" value="{{@index}}">
@@ -22,7 +12,17 @@
         <input type="hidden" name="method" value="insert">
         <input type="submit" value="Add">
     </form>
+    <div class="image-container">
+        <img src="{{this.url}}" />
+    </div>
     {{/each}}
+    <form class="inline-form" action="/a/{{token}}/edit" method="post" accept-charset="utf-8">
+        <input class="grow" type="url" name="url" value="">
+        <input type="hidden" name="index" value="{{image_count}}">
+        <input type="hidden" name="deletion_token" value="{{deletion_token}}">
+        <input type="hidden" name="method" value="insert">
+        <input type="submit" value="Add">
+    </form>
 </div>
 {{/inline}}
 {{~> layout ~}}

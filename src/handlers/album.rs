@@ -102,6 +102,7 @@ pub struct AlbumEditContext<'a> {
     pub token: &'a str,
     pub deletion_token: &'a str,
     pub images: &'a Vec<ImageContext<'a>>,
+    pub image_count: usize,
 }
 
 #[derive(Debug, Serialize)]
@@ -139,6 +140,7 @@ pub fn get_edit(
             token: &album.token,
             deletion_token: &album.deletion_token,
             images: &images,
+            image_count: images.len(),
         },
     ))
 }
@@ -174,6 +176,7 @@ pub fn post_edit(
             token: &album.token,
             deletion_token: &album.deletion_token,
             images: &images,
+            image_count: images.len(),
         },
     ))
 }
