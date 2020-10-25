@@ -1,6 +1,6 @@
 [package]
 name = "v"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Nikolai Zimmermann <nikolai@chronophylos.com>"]
 description = "A image viewer and album manager"
 license = "MIT"
